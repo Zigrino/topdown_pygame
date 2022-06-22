@@ -75,7 +75,6 @@ def main():
                 gameover = sprites.gameover.Gameover()
                 player.dead()
                 gun.player_killed()
-                print("player killed")
         for bullet in bullets:
             for enemy in enemies:
                 if pygame.sprite.collide_mask(bullet, enemy):

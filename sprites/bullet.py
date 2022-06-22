@@ -22,8 +22,14 @@ class Bullet(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center = position)
         self.vec_to_mouse = utils.normalize_vector(self.vec_to_mouse) 
         self.speed = 10
+        self.surface = pygame.display.get_surface()
     def draw(self, surface):
         surface.blit(self.image, self.rect)
     def update(self):
         self.rect = self.rect.move((-self.vec_to_mouse[0] * self.speed, -self.vec_to_mouse[1] * self.speed)) 
+        width, height = self.surface.get_size()
+        if self.rect.x < 0 or self.rect.x > width:
+            self.kill()
+        if self.rect.y < 0 or self.rect.y > height:
+            self.kill()
         
