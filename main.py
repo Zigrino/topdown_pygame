@@ -6,6 +6,7 @@ import sprites.gun
 import sprites.bullet
 import sprites.gameover
 import utils
+import time
 pygame.init()
 utils = utils.Utils()
 #Constants
@@ -23,10 +24,19 @@ def main():
     #Sprites
     player = sprites.player.Player()
     gun = sprites.gun.Gun()
-    enemies = pygame.sprite.Group(sprites.enemy.Enemy(player))
+    enemies = pygame.sprite.Group()
     bullets = pygame.sprite.Group()
     running = True
     mouse_exit = False
+    max_enemies = 5
+    last_spawn_time = time.time()
+    spawn_delay = 2
+    min_spawn_delay = 0.5
+    start_time = time.time()
+    difficulty_time = time.time()
+    difficulty_increment_time = 5
+    enemy_speed = 2
+    enemy_max_speed = 6
     while running:
         #Screen refresh rate
         clock.tick(FPS)
@@ -72,7 +82,22 @@ def main():
                     enemy.dead()
                     print("killed enemy")
                 
-    
+        
+        #Spawning enemies
+        if time.time() - last_spawn_time >= spawn_delay:
+            if len(enemies.sprites()) < max_enemies:
+                print(len(enemies.sprites()))
+                last_spawn_time = time.time()
+                enemies.add(sprites.enemy.Enemy(player, speed = enemy_speed))
+        if (time.time() - difficulty_time) >= difficulty_increment_time:
+            print("increasing difficulty")
+            max_enemies += 1
+            if enemy_speed < enemy_max_speed:
+                enemy_speed += 1
+            if spawn_delay > min_spawn_delay:
+                spawn_delay -= 0.3
+            difficulty_time = time.time()
+
         #Rendering
         screen.fill((255, 255, 255))
         player.draw(screen)
