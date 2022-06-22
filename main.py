@@ -5,6 +5,7 @@ import sprites.enemy
 import sprites.gun 
 import sprites.bullet
 import sprites.gameover
+import sprites.bullet_counter
 import utils
 import time
 pygame.init()
@@ -15,6 +16,8 @@ HEIGHT = 600
 FPS = 60
 
 fullscreen = input("Fullscreen or na (fullscreen is easier)? y/n: ") 
+bullet_num = int(input("How many bullets would you like to start with? (more = easier): "))
+
 #Window creating
 #screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
 #screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
@@ -26,11 +29,15 @@ pygame.display.set_caption("")
 clock = pygame.time.Clock()
  
 def main():
+    global bullet_num
+
     #Sprites
     player = sprites.player.Player()
     gun = sprites.gun.Gun()
     enemies = pygame.sprite.Group()
     bullets = pygame.sprite.Group()
+    bullet_counter = sprites.bullet_counter.Bullet_Counter(bullet_num)
+    #variables
     running = True
     mouse_exit = False
     max_enemies = 5
@@ -64,8 +71,11 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if god_mode:
                     god_firing = True
-                if not player_dead and not god_mode:
+                if not player_dead and not god_mode and bullet_num > 0:
+                    bullet_num -= 1
+                    bullet_counter.remove_bullet()
                     bullets.add(sprites.bullet.Bullet(player.rect.center))
+                    print(f"You have {bullet_num} bullets left")
             if event.type == pygame.MOUSEBUTTONUP:
                 if god_mode:
                     god_firing = False
@@ -84,7 +94,6 @@ def main():
 
 
         #stop mouse from exiting screen
-        mousepos = pygame.mouse.get_pos() 
         
         #collisions
         for enemy in enemies:
@@ -97,7 +106,10 @@ def main():
             for enemy in enemies:
                 if pygame.sprite.collide_mask(bullet, enemy):
                     enemy.dead()
+                    bullet_num += 1
+                    bullet_counter.add_bullet()
                     print("killed enemy")
+
                 
         
         #Spawning enemies
@@ -119,6 +131,7 @@ def main():
         screen.fill((255, 255, 255))
         player.draw(screen)
         enemies.draw(screen)
+        bullet_counter.draw(screen)
 
         gun.draw(screen)
         bullets.draw(screen)

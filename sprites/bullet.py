@@ -21,7 +21,7 @@ class Bullet(pygame.sprite.Sprite):
         self.image = pygame.transform.rotate(self.original_image, angle + 90)
         self.rect = self.image.get_rect(center = position)
         self.vec_to_mouse = utils.normalize_vector(self.vec_to_mouse) 
-        self.speed = 10
+        self.speed = 15
         self.surface = pygame.display.get_surface()
     def draw(self, surface):
         surface.blit(self.image, self.rect)
