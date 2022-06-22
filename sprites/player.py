@@ -19,7 +19,7 @@ class Player(pygame.sprite.Sprite):
         #get rectangle for image, set position
         self.rect = self.image.get_rect()
         self.rect.center = (400, 300)
-        surface = pygame.display.get_surface()
+        self.surface = pygame.display.get_surface()
     def draw(self, surface):
         surface.blit(self.image, self.rect)
         #pygame.gfxdraw.aacircle(self.image, self.rect.x, self.rect.y, self.width, self.color)
@@ -38,13 +38,16 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_s]:
             velocity[1] += self.walkspeed
         #border collisions
-        if self.rect.right > 800:
+
+        self.screen_width, self.screen_height = self.surface.get_size()
+
+        if self.rect.right > self.screen_width:
             if velocity[0] > 0:
                 velocity[0] = 0
         elif self.rect.left < 0:
             if velocity[0] < 0:
                 velocity[0] = 0
-        if self.rect.bottom > 600:
+        if self.rect.bottom > self.screen_height:
             if velocity[1] > 0:
                 velocity[1] = 0
         elif self.rect.top < 0:
