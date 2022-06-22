@@ -6,6 +6,7 @@ import sprites.gun
 import sprites.bullet
 import sprites.gameover
 import sprites.bullet_counter
+import sprites.bullet_drop
 import utils
 import time
 pygame.init()
@@ -37,6 +38,7 @@ def main():
     enemies = pygame.sprite.Group()
     bullets = pygame.sprite.Group()
     bullet_counter = sprites.bullet_counter.Bullet_Counter(bullet_num)
+    drops = pygame.sprite.Group()
     #variables
     running = True
     mouse_exit = False
@@ -96,19 +98,27 @@ def main():
         #stop mouse from exiting screen
         
         #collisions
+        #enemy player collisions
         for enemy in enemies:
             if pygame.sprite.collide_mask(player, enemy):
                 gameover = sprites.gameover.Gameover()
                 player_dead = True
                 player.dead()
                 gun.player_killed()
+        #bullet enemy collisions
         for bullet in bullets:
             for enemy in enemies:
                 if pygame.sprite.collide_mask(bullet, enemy):
-                    enemy.dead()
-                    bullet_num += 1
-                    bullet_counter.add_bullet()
+                    drops.add(sprites.bullet_drop.Drop(enemy.rect.center))
                     print("killed enemy")
+                    enemy.dead()
+        #player bullet drop collisions
+        for drop in drops:
+            if pygame.sprite.collide_mask(player, drop):
+                bullet_num += 1
+                bullet_counter.add_bullet()
+                drop.kill()
+
 
                 
         
@@ -129,6 +139,7 @@ def main():
 
         #Rendering
         screen.fill((255, 255, 255))
+        drops.draw(screen)
         player.draw(screen)
         enemies.draw(screen)
         bullet_counter.draw(screen)
