@@ -7,6 +7,7 @@ import sprites.bullet
 import sprites.gameover
 import sprites.bullet_counter
 import sprites.bullet_drop
+import sprites.gameover
 import utils
 import time
 pygame.init()
@@ -17,7 +18,8 @@ HEIGHT = 600
 FPS = 60
 
 fullscreen = input("Fullscreen or na (fullscreen is easier)? y/n: ") 
-bullet_num = int(input("How many bullets would you like to start with? (more = easier): "))
+orig_bullet_num = int(input("How many bullets would you like to start with? (more = easier): "))
+
 
 #Window creating
 #screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
@@ -30,8 +32,9 @@ pygame.display.set_caption("")
 clock = pygame.time.Clock()
  
 def main():
-    global bullet_num
-
+    global orig_bullet_num
+    bullet_num = orig_bullet_num
+    
     #Sprites
     player = sprites.player.Player()
     gun = sprites.gun.Gun()
@@ -39,6 +42,7 @@ def main():
     bullets = pygame.sprite.Group()
     bullet_counter = sprites.bullet_counter.Bullet_Counter(bullet_num)
     drops = pygame.sprite.Group()
+    gameover = sprites.gameover.Gameover()
     #variables
     running = True
     mouse_exit = False
@@ -89,6 +93,10 @@ def main():
                     else:
                         god_mode = True
                         print("GOD MODE ENABLED. PREPARE TO DIE, RED SCUM")
+                if event.key == pygame.K_r:
+                    print("restarting")
+                    main()
+
 
         #Godmode firing
         if god_firing:
@@ -101,7 +109,7 @@ def main():
         #enemy player collisions
         for enemy in enemies:
             if pygame.sprite.collide_mask(player, enemy):
-                gameover = sprites.gameover.Gameover()
+                gameover.playerDead = True
                 player_dead = True
                 player.dead()
                 gun.player_killed()
@@ -139,10 +147,13 @@ def main():
 
         #Rendering
         screen.fill((255, 255, 255))
-        drops.draw(screen)
-        player.draw(screen)
-        enemies.draw(screen)
-        bullet_counter.draw(screen)
+        if not gameover.playerDead:
+            drops.draw(screen)
+            player.draw(screen)
+            enemies.draw(screen)
+            bullet_counter.draw(screen)
+        else:
+            gameover.draw(screen)
 
         gun.draw(screen)
         bullets.draw(screen)
