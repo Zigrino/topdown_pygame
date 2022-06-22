@@ -9,6 +9,8 @@ class Bullet(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (self.scale * 337, self.scale * 617))
         self.rect = self.image.get_rect()
         self.rect.center = position
+        #mask for collisions
+        self.mask = pygame.mask.from_surface(self.image)
 
         self.original_image = self.image
         mousepos = pygame.mouse.get_pos() 

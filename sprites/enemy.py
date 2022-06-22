@@ -11,6 +11,7 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = random.randint(0, 700)
         self.rect.y = random.randint(0, 500)
+        self.mask = pygame.mask.from_surface(self.image)
         self.speed = 4
         
         surface = pygame.display.get_surface()
@@ -19,8 +20,9 @@ class Enemy(pygame.sprite.Sprite):
         surface.blit(self.image, self.rect)
     def update(self, player):
         playercoords = player.rect.center
-        print(player.rect.x, " ", player.rect.y)
         movevec = [playercoords[0] - self.rect.center[0], playercoords[1] - self.rect.center[1]]
         movevec = (utils.normalize_vector(tuple(movevec))[0] * self.speed, utils.normalize_vector(tuple(movevec))[1] * self.speed)
         self.rect = self.rect.move(movevec)
+    def dead(self):
+        self.kill()
 

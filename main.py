@@ -4,9 +4,10 @@ import sprites.player
 import sprites.enemy
 import sprites.gun 
 import sprites.bullet
+import sprites.gameover
 import utils
 pygame.init()
- 
+utils = utils.Utils()
 #Constants
 WIDTH = 800
 HEIGHT = 600
@@ -22,8 +23,8 @@ def main():
     #Sprites
     player = sprites.player.Player()
     gun = sprites.gun.Gun()
-    enemies = [sprites.enemy.Enemy(player)] 
-    bullets = []
+    enemies = pygame.sprite.Group(sprites.enemy.Enemy(player))
+    bullets = pygame.sprite.Group()
     running = True
     mouse_exit = False
     while running:
@@ -43,7 +44,7 @@ def main():
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                bullets.append(sprites.bullet.Bullet(player.rect.center))
+                bullets.add(sprites.bullet.Bullet(player.rect.center))
         #stop mouse from exiting screen
         mousepos = pygame.mouse.get_pos() 
         """
@@ -57,17 +58,28 @@ def main():
             elif mousepos[1] >= HEIGHT:
                 pygame.mouse.set_pos([mousepos[0], HEIGHT])
         """
-
+        
+        #collisions
+        for enemy in enemies:
+            if pygame.sprite.collide_mask(player, enemy):
+                gameover = sprites.gameover.Gameover()
+                player.dead()
+                gun.player_killed()
+                print("player killed")
+        for bullet in bullets:
+            for enemy in enemies:
+                if pygame.sprite.collide_mask(bullet, enemy):
+                    enemy.dead()
+                    print("killed enemy")
                 
     
         #Rendering
         screen.fill((255, 255, 255))
         player.draw(screen)
-        for enemy in enemies:
-            enemy.draw(screen)
+        enemies.draw(screen)
+
         gun.draw(screen)
-        for bullet in bullets:
-            bullet.draw(screen)
+        bullets.draw(screen)
         #Updating sprites
         player.update() 
         for enemy in enemies:
