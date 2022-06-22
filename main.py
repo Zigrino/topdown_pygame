@@ -8,6 +8,7 @@ import sprites.gameover
 import sprites.bullet_counter
 import sprites.bullet_drop
 import sprites.gameover
+import sprites.score
 import utils
 import time
 pygame.init()
@@ -43,6 +44,7 @@ def main():
     bullet_counter = sprites.bullet_counter.Bullet_Counter(bullet_num)
     drops = pygame.sprite.Group()
     gameover = sprites.gameover.Gameover()
+    score = sprites.score.Score()
     #variables
     running = True
     mouse_exit = False
@@ -54,7 +56,7 @@ def main():
     difficulty_time = time.time()
     difficulty_increment_time = 5
     enemy_speed = 2
-    enemy_max_speed = 6
+    enemy_max_speed = 5
     player_dead = False
     god_mode = False
     god_firing = False
@@ -81,7 +83,6 @@ def main():
                     bullet_num -= 1
                     bullet_counter.remove_bullet()
                     bullets.add(sprites.bullet.Bullet(player.rect.center))
-                    print(f"You have {bullet_num} bullets left")
             if event.type == pygame.MOUSEBUTTONUP:
                 if god_mode:
                     god_firing = False
@@ -92,9 +93,9 @@ def main():
                         print("Disabled god mode")
                     else:
                         god_mode = True
+                        enemy_max_speed = 25
                         print("GOD MODE ENABLED. PREPARE TO DIE, RED SCUM")
                 if event.key == pygame.K_r:
-                    print("restarting")
                     main()
 
 
@@ -118,8 +119,8 @@ def main():
             for enemy in enemies:
                 if pygame.sprite.collide_mask(bullet, enemy):
                     drops.add(sprites.bullet_drop.Drop(enemy.rect.center))
-                    print("killed enemy")
                     enemy.dead()
+                    score.score += 1
         #player bullet drop collisions
         for drop in drops:
             if pygame.sprite.collide_mask(player, drop):
@@ -149,14 +150,16 @@ def main():
         screen.fill((255, 255, 255))
         if not gameover.playerDead:
             drops.draw(screen)
+            bullet_counter.draw(screen)
+            bullets.draw(screen)
             player.draw(screen)
             enemies.draw(screen)
-            bullet_counter.draw(screen)
+            gun.draw(screen)
         else:
             gameover.draw(screen)
+            score.gameover = True
+            score.draw(screen)
 
-        gun.draw(screen)
-        bullets.draw(screen)
         #Updating sprites
         player.update() 
         for enemy in enemies:
