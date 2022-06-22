@@ -14,9 +14,14 @@ WIDTH = 800
 HEIGHT = 600
 FPS = 60
 
- 
+fullscreen = input("Fullscreen or na (fullscreen is easier)? y/n: ") 
 #Window creating
-screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+#screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+#screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+if fullscreen == "y" or fullscreen == "yes":
+    screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+else: 
+    screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption("")
 clock = pygame.time.Clock()
  
@@ -37,6 +42,9 @@ def main():
     difficulty_increment_time = 5
     enemy_speed = 2
     enemy_max_speed = 6
+    player_dead = False
+    god_mode = False
+    god_firing = False
     while running:
         #Screen refresh rate
         clock.tick(FPS)
@@ -54,25 +62,35 @@ def main():
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                bullets.add(sprites.bullet.Bullet(player.rect.center))
+                if god_mode:
+                    god_firing = True
+                if not player_dead and not god_mode:
+                    bullets.add(sprites.bullet.Bullet(player.rect.center))
+            if event.type == pygame.MOUSEBUTTONUP:
+                if god_mode:
+                    god_firing = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_g:
+                    if god_mode:
+                        god_mode = False
+                        print("Disabled god mode")
+                    else:
+                        god_mode = True
+                        print("GOD MODE ENABLED. PREPARE TO DIE, RED SCUM")
+
+        #Godmode firing
+        if god_firing:
+            bullets.add(sprites.bullet.Bullet(player.rect.center))
+
+
         #stop mouse from exiting screen
         mousepos = pygame.mouse.get_pos() 
-        """
-        if not mouse_exit:
-            if mousepos[0] <= 0:
-                pygame.mouse.set_pos([0, mousepos[1]])
-            elif mousepos[0] >= WIDTH:
-                pygame.mouse.set_pos([WIDTH, mousepos[1]])
-            if mousepos[1] <= 0:
-                pygame.mouse.set_pos([mousepos[0], 0])
-            elif mousepos[1] >= HEIGHT:
-                pygame.mouse.set_pos([mousepos[0], HEIGHT])
-        """
         
         #collisions
         for enemy in enemies:
             if pygame.sprite.collide_mask(player, enemy):
                 gameover = sprites.gameover.Gameover()
+                player_dead = True
                 player.dead()
                 gun.player_killed()
         for bullet in bullets:
