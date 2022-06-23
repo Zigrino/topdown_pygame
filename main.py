@@ -1,4 +1,5 @@
 import pygame
+import pygame.mixer as mixer
 import sys
 import sprites.player
 import sprites.enemy
@@ -45,6 +46,10 @@ def main():
     drops = pygame.sprite.Group()
     gameover = sprites.gameover.Gameover()
     score = sprites.score.Score()
+    #shoot sound
+    shoot_sound = mixer.Sound(r"assets/sounds/shoot_sound.wav")
+    empty_sound = mixer.Sound(r"assets/sounds/empty_sound.wav")
+    pump_sound = mixer.Sound(r"assets/sounds/pump.wav")
     #variables
     running = True
     mouse_exit = False
@@ -82,7 +87,10 @@ def main():
                 if not player_dead and not god_mode and bullet_num > 0:
                     bullet_num -= 1
                     bullet_counter.remove_bullet()
+                    shoot_sound.play()
                     bullets.add(sprites.bullet.Bullet(player.rect.center))
+                elif not player_dead and bullet_num <= 0:
+                    empty_sound.play()
             if event.type == pygame.MOUSEBUTTONUP:
                 if god_mode:
                     god_firing = False
@@ -126,6 +134,7 @@ def main():
             if pygame.sprite.collide_mask(player, drop):
                 bullet_num += 1
                 bullet_counter.add_bullet()
+                pump_sound.play()
                 drop.kill()
 
 
@@ -134,7 +143,6 @@ def main():
         #Spawning enemies
         if time.time() - last_spawn_time >= spawn_delay:
             if len(enemies.sprites()) < max_enemies:
-                print(len(enemies.sprites()))
                 last_spawn_time = time.time()
                 enemies.add(sprites.enemy.Enemy(player, speed = enemy_speed))
         if (time.time() - difficulty_time) >= difficulty_increment_time:
@@ -152,9 +160,11 @@ def main():
             drops.draw(screen)
             bullet_counter.draw(screen)
             bullets.draw(screen)
+            score.draw(screen)
             player.draw(screen)
             enemies.draw(screen)
             gun.draw(screen)
+            
         else:
             gameover.draw(screen)
             score.gameover = True

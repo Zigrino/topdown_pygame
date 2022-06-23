@@ -17,9 +17,11 @@ class Score(pygame.sprite.Sprite):
     def draw(self, surface):
         width, height = surface.get_size()
         if self.gameover:
+            self.text1 = self.font1.render(f"Score: {self.score}", True, (0, 0, 0), (255, 255, 255))
             self.rect1.center = (width//2, height//2 + 150)
             surface.blit(self.text1, self.rect1)
 
-        self.text = self.font.render(f"Score: {self.score}", True, (0, 0, 0), (255, 255, 255))
-        self.rect.bottomright = (width - 5, height - 5)
-        surface.blit(self.text, self.rect)
+        else:
+            self.text = self.font.render(f"Score: {self.score}", True, (0, 0, 0), (255, 255, 255))
+            self.rect.bottomright = (width - 5, height - 5)
+            surface.blit(self.text, self.rect)
