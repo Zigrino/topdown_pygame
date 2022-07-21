@@ -16,12 +16,17 @@ import sprites.defence_powerup
 import utils
 import random
 import time
+import sprites.forcefield
+import sprites.forcefield_count
 pygame.init()
+pygame.mixer.init()
 utils = utils.Utils()
 #Constants
 WIDTH = globals.window_size[0]
 HEIGHT = globals.window_size[1]
 FPS = 60
+SCREEN_COLOR = (255, 255, 255)
+sound_volume = 0.5
 
 fullscreen = input("Fullscreen or na (fullscreen is easier)? y/n: ") 
 orig_bullet_num = int(input("How many bullets would you like to start with? (more = easier): "))
@@ -36,7 +41,6 @@ else:
     screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption("")
 clock = pygame.time.Clock()
- 
 def main():
     global orig_bullet_num
     bullet_num = orig_bullet_num
@@ -55,10 +59,15 @@ def main():
     #gameover & score stuff
     gameover = sprites.gameover.Gameover()
     score = sprites.score.Score()
+    #ALL SOUNDS
     #shoot sound
     shoot_sound = mixer.Sound(r"assets/sounds/shoot_sound.wav")
+    shoot_sound.set_volume(globals.sound_volume)
     empty_sound = mixer.Sound(r"assets/sounds/empty_sound.wav")
+    empty_sound.set_volume(globals.sound_volume)
     pump_sound = mixer.Sound(r"assets/sounds/pump.wav")
+    pump_sound.set_volume(globals.sound_volume)
+    ######################
     #variables
     running = True
     mouse_exit = False
@@ -80,6 +89,14 @@ def main():
     time_since_dfnpwr = 0
     last_dmg_pwr_time = time.time()
     last_dfn_pwr_time = time.time()
+    #forcefield on/off
+    forcefield = sprites.forcefield.Forcefield(player)
+    forcefieldon = False
+    forcefield_time = 6 #time that forcefield lasts
+    last_forcefield_time = time.time()
+    time_since_forcfield_on = 0
+    forcefield_count = 0
+    forcefield_counter = sprites.forcefield_count.Forcefield_Counter()
     while running:
         #Screen refresh rate
         clock.tick(FPS)
@@ -138,10 +155,17 @@ def main():
         #enemy player collisions
         for enemy in enemies:
             if pygame.sprite.collide_mask(player, enemy):
-                gameover.playerDead = True
-                player_dead = True
-                player.dead()
-                gun.player_killed()
+                if forcefieldon: #Checking for forcefield
+                    forcefield_count -= 1
+                    forcefield_counter.remove_forcefield()
+                    if forcefield_count <= 0:
+                        forcefieldon = False
+                    enemy.kill()
+                else:
+                    gameover.playerDead = True
+                    player_dead = True
+                    player.dead()
+                    gun.player_killed()
         #bullet enemy collisions
         for bullet in bullets:
             for enemy in enemies:
@@ -168,9 +192,23 @@ def main():
         for powerup in defence_powerups:
             if pygame.sprite.collide_mask(player, powerup):
                 #Powerup stuff
-
+                forcefieldon = True 
+                forcefield_count += 1
+                forcefield_counter.add_forcefield()
+                
+                last_forcefield_time = time.time()
                 #Play sound and kill powerup
                 powerup.kill()
+
+
+        #Managing the powerups
+        #forcefield time limit
+        #time_since_forcfield_on = time.time() - last_forcefield_time
+        #if time_since_forcfield_on >= forcefield_time:
+            #forcefieldon = False
+
+
+
                 
         
         #Spawning enemies
@@ -191,20 +229,23 @@ def main():
         time_since_dmgpwr = time.time() - last_dmg_pwr_time
         if time_since_dmgpwr >= 6:
             screenx, screeny = screen.get_size()
-            damage_powerups.add(sprites.damage_powerup.Damage_Powerup(random.randint(0, screenx), random.randint(0, screeny)))
+            damage_powerups.add(sprites.damage_powerup.Damage_Powerup(random.randint(player.scale/2, screenx - player.scale/2), random.randint(player.scale/2, screeny - player.scale/2)))
             last_dmg_pwr_time = time.time()
 
         time_since_dfnpwr = time.time() - last_dfn_pwr_time
 
         if time_since_dfnpwr >= 6:
             screenx, screeny = screen.get_size()
-            defence_powerups.add(sprites.defence_powerup.Defence_Powerup(random.randint(0, screenx), random.randint(0, screeny)))
+            defence_powerups.add(sprites.defence_powerup.Defence_Powerup(random.randint(player.scale/2, screenx - player.scale/2), random.randint(player.scale/2, screeny - player.scale/2)))
             last_dfn_pwr_time = time.time()
         
 
         #Rendering
-        screen.fill((255, 255, 255))
+        screen.fill(SCREEN_COLOR)
         if not gameover.playerDead:
+            if forcefieldon:
+                forcefield.draw(screen)
+            forcefield_counter.draw(screen)
             damage_powerups.draw(screen)
             defence_powerups.draw(screen)
             drops.draw(screen)
@@ -223,6 +264,8 @@ def main():
 
         #Updating sprites
         player.update() 
+        if forcefieldon:
+            forcefield.update(player.rect)
         for enemy in enemies:
             enemy.update(player)
         gun.update(player) 
@@ -233,4 +276,3 @@ def main():
  
 if __name__ == "__main__":
     main()
-

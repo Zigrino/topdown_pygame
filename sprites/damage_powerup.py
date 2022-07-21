@@ -12,11 +12,11 @@ class Damage_Powerup(pygame.sprite.Sprite):
         if self.x > (xbound - self.image.get_size()[0] // 2):
             self.x = xbound - self.image.get_size()[0]
         elif self.x < (self.image.get_size()[0] // 2):
-            self.x = self.image.get_size()[0] // 2
+            self.x = self.image.get_size()[0] 
         if self.y > (ybound - self.image.get_size()[1] // 2):
-            self.y = ybound - self.image.get_size()[1] // 2
+            self.y = ybound - self.image.get_size()[1]
         elif self.y < self.image.get_size()[1] // 2:
-            self.y = self.image.get_size()[1] // 2
+            self.y = self.image.get_size()[1] 
 
 
         self.rect.center = (self.x, self.y)
