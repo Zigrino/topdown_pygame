@@ -18,6 +18,7 @@ import random
 import time
 import sprites.forcefield
 import sprites.forcefield_count
+import sprites.missile, sprites.missile_counter, sprites.missile_explosion
 pygame.init()
 pygame.mixer.init()
 utils = utils.Utils()
@@ -77,9 +78,11 @@ def main():
     min_spawn_delay = 0.5
     start_time = time.time()
     difficulty_time = time.time()
+    #DIFFICULTY STUFF
     difficulty_increment_time = 5
     enemy_speed = 2
     enemy_max_speed = 5
+    #other stuff
     player_dead = False
     god_mode = False
     god_firing = False
@@ -97,6 +100,13 @@ def main():
     time_since_forcfield_on = 0
     forcefield_count = 0
     forcefield_counter = sprites.forcefield_count.Forcefield_Counter()
+
+    #missile stuff
+    missiles = pygame.sprite.Group()
+    missile_counter = sprites.missile_counter.Missile_Counter()
+    explosions = pygame.sprite.Group()
+    missile_num = 0
+
     while running:
         #Screen refresh rate
         clock.tick(FPS)
@@ -116,14 +126,20 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if god_mode:
                     god_firing = True
-                if not player_dead and not god_mode and bullet_num > 0:
-                    #BULLET TIME
-                    bullet_num -= 1
-                    bullet_counter.remove_bullet()
-                    shoot_sound.play()
-                    bullets.add(sprites.bullet.Bullet(player.rect.center))
-                elif not player_dead and bullet_num <= 0:
-                    empty_sound.play()
+                if event.button == 1: #checking for left mouse press
+                    if not player_dead and not god_mode and bullet_num > 0:
+                        #BULLET TIME
+                        bullet_num -= 1
+                        bullet_counter.remove_bullet()
+                        shoot_sound.play()
+                        bullets.add(sprites.bullet.Bullet(player.rect.center))
+                    elif not player_dead and bullet_num <= 0:
+                        empty_sound.play()
+                if event.button == 3: #checking for right mouse press
+                    if not player_dead and not god_mode and missile_num > 0:
+                        missile_num -= 1
+                        missile_counter.remove_missile()
+                        missiles.add(sprites.missile.Missile(player.rect.center))
             if event.type == pygame.MOUSEBUTTONUP:
                 if god_mode:
                     god_firing = False
@@ -138,7 +154,7 @@ def main():
                         print("GOD MODE ENABLED. PREPARE TO DIE, RED SCUM")
                 if event.key == pygame.K_r:
                     main()
-                if gameover and event.key == pygame.K_q:
+                if gameover.playerDead and event.key == pygame.K_q:
                     pygame.quit()
                     sys.exit()  
 
@@ -166,6 +182,7 @@ def main():
                     player_dead = True
                     player.dead()
                     gun.player_killed()
+
         #bullet enemy collisions
         for bullet in bullets:
             for enemy in enemies:
@@ -173,6 +190,14 @@ def main():
                     drops.add(sprites.bullet_drop.Drop(enemy.rect.center))
                     enemy.dead()
                     score.score += 1
+
+        #missile enemy collisions
+        for missile in missiles:
+            for enemy in enemies:
+                if pygame.sprite.collide_mask(missile, enemy):
+                    explosions.add(sprites.missile_explosion.Missile_Explosion(enemy.rect.center))
+                    missile.kill()
+                    enemy.kill()
         #player bullet drop collisions
         for drop in drops:
             if pygame.sprite.collide_mask(player, drop):
@@ -185,7 +210,8 @@ def main():
         for powerup in damage_powerups:
             if pygame.sprite.collide_mask(player, powerup):
                 #Powerup stuff
-
+                missile_num += 1
+                missile_counter.add_missile()
                 #Play sound and kill powerup
                 powerup.kill()
 
@@ -246,11 +272,14 @@ def main():
             if forcefieldon:
                 forcefield.draw(screen)
             forcefield_counter.draw(screen)
+            missile_counter.draw(screen)
             damage_powerups.draw(screen)
             defence_powerups.draw(screen)
             drops.draw(screen)
             bullet_counter.draw(screen)
             bullets.draw(screen)
+            missiles.draw(screen)
+            
             score.draw(screen)
             player.draw(screen)
             enemies.draw(screen)
@@ -271,6 +300,8 @@ def main():
         gun.update(player) 
         for bullet in bullets:
             bullet.update()
+        missiles.update()
+        score.update()
         #Screen Refresh
         pygame.display.update()
  
