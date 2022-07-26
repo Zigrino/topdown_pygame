@@ -203,6 +203,7 @@ def main():
         for explosion in explosions:
             for enemy in enemies:
                 if pygame.sprite.collide_mask(explosion, enemy):
+                    drops.add(sprites.bullet_drop.Drop(enemy.rect.center))
                     enemy.kill()
                     
         #            """
@@ -210,11 +211,17 @@ def main():
         #explosion player collisions
         for explosion in explosions:
             if pygame.sprite.collide_mask(explosion, player):
-                gameover.playerDead = True
-                player_dead = True
-                player.dead()
-                gun.player_killed()
-                explosion.kill()
+                if forcefieldon: 
+                    forcefield_count -= 1
+                    forcefield_counter.remove_forcefield()
+                    if forcefield_count <= 0:
+                        forcefieldon = False
+                else:
+                    gameover.playerDead = True
+                    player_dead = True
+                    player.dead()
+                    gun.player_killed()
+                    explosion.kill()
 
 
         #player bullet drop collisions
@@ -322,7 +329,6 @@ def main():
             bullet.update()
         missiles.update()
         explosions.update()
-        score.update()
         #Screen Refresh
         pygame.display.update()
  

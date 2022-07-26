@@ -23,9 +23,6 @@ class Score(pygame.sprite.Sprite):
 
         else:
             self.text = self.font.render(f"Score: {self.score}", True, (0, 0, 0), (255, 255, 255))
+            self.rect = self.text.get_rect()
             self.rect.bottomright = (width - 5, height - 5)
             surface.blit(self.text, self.rect)
-    def update(self):
-        surface = pygame.display.get_surface()
-        width, height = surface.get_size()
-        self.rect.bottomright = (width, height)
