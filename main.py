@@ -198,6 +198,25 @@ def main():
                     explosions.add(sprites.missile_explosion.Missile_Explosion(enemy.rect.center))
                     missile.kill()
                     enemy.kill()
+        #"""
+        #explosion enemy collisions:
+        for explosion in explosions:
+            for enemy in enemies:
+                if pygame.sprite.collide_mask(explosion, enemy):
+                    enemy.kill()
+                    
+        #            """
+
+        #explosion player collisions
+        for explosion in explosions:
+            if pygame.sprite.collide_mask(explosion, player):
+                gameover.playerDead = True
+                player_dead = True
+                player.dead()
+                gun.player_killed()
+                explosion.kill()
+
+
         #player bullet drop collisions
         for drop in drops:
             if pygame.sprite.collide_mask(player, drop):
@@ -279,6 +298,7 @@ def main():
             bullet_counter.draw(screen)
             bullets.draw(screen)
             missiles.draw(screen)
+            explosions.draw(screen)
             
             score.draw(screen)
             player.draw(screen)
@@ -301,6 +321,7 @@ def main():
         for bullet in bullets:
             bullet.update()
         missiles.update()
+        explosions.update()
         score.update()
         #Screen Refresh
         pygame.display.update()
